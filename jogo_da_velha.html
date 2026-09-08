@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jogo da Velha</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    color: #fff;
+  }
+  h1 { font-size: 2.5rem; text-shadow: 2px 2px 4px rgba(0,0,0,.3); }
+  #status { font-size: 1.3rem; min-height: 1.5em; }
+  #board {
+    display: grid;
+    grid-template-columns: repeat(3, 120px);
+    grid-template-rows: repeat(3, 120px);
+    gap: 8px;
+    background: rgba(255,255,255,.2);
+    padding: 8px;
+    border-radius: 12px;
+  }
+  .cell {
+    font-size: 3.5rem;
+    font-weight: bold;
+    background: rgba(255,255,255,.95);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #333;
+    transition: transform .1s;
+  }
+  .cell:hover { transform: scale(1.03); }
+  .cell.x { color: #e74c3c; }
+  .cell.o { color: #3498db; }
+  .cell:disabled { cursor: not-allowed; }
+  #restart {
+    font-size: 1.1rem;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    background: #fff;
+    color: #764ba2;
+    font-weight: bold;
+    cursor: pointer;
+    transition: opacity .2s;
+  }
+  #restart:hover { opacity: .85; }
+</style>
+</head>
+<body>
+  <h1>Jogo da Velha</h1>
+  <div id="status">Vez do X</div>
+  <div id="board"></div>
+  <button id="restart">Reiniciar</button>
+
+<script>
+const boardEl = document.getElementById('board');
+const statusEl = document.getElementById('status');
+let board = ['', '', '', '', '', '', '', '', ''];
+let currentPlayer = 'X';
+let gameActive = true;
+
+const winPatterns = [
+  [0,1,2], [3,4,5], [6,7,8],
+  [0,3,6], [1,4,7], [2,5,8],
+  [0,4,8], [2,4,6]
+];
+
+function render() {
+  boardEl.innerHTML = '';
+  board.forEach((value, i) => {
+    const btn = document.createElement('button');
+    btn.classList.add('cell');
+    btn.dataset.index = i;
+    if (value === 'X') btn.classList.add('x');
+    if (value === 'O') btn.classList.add('o');
+    btn.textContent = value;
+    btn.disabled = !gameActive || value !== '';
+    btn.addEventListener('click', () => handleMove(i, btn));
+    boardEl.appendChild(btn);
+  });
+}
+
+function handleMove(index, btn) {
+  if (!gameActive || board[index] !== '') return;
+  board[index] = currentPlayer;
+  btn.textContent = currentPlayer;
+  btn.classList.add(currentPlayer.toLowerCase());
+  btn.disabled = true;
+  if (checkWin()) {
+    statusEl.textContent = `Vitória do ${currentPlayer}!`;
+    gameActive = false;
+  } else if (board.every(c => c !== '')) {
+    statusEl.textContent = 'Empate!';
+    gameActive = false;
+  } else {
+    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+    statusEl.textContent = `Vez do ${currentPlayer}`;
+  }
+}
+
+function checkWin() {
+  return winPatterns.some(pattern =>
+    pattern.every(i => board[i] === currentPlayer)
+  );
+}
+
+document.getElementById('restart').addEventListener('click', () => {
+  board = ['', '', '', '', '', '', '', '', ''];
+  currentPlayer = 'X';
+  gameActive = true;
+  statusEl.textContent = 'Vez do X';
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
